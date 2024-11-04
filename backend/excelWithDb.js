@@ -57,3 +57,25 @@ app.post("/api/login", upload.single("profilImage"), async (req, res) => {
       res.status(500).json({ message: "Internal Server Error" });
     }
   });
+
+// in this way to get excel file header name and and sheets name and their data 
+
+  app.get("/api/excelRead", (req, res) => {
+    try {
+        const file = xlsx.readFile("./users.xlsx");
+        const sheets = file.SheetNames;
+        const data = [];
+  
+        sheets.forEach(sheetName => {
+            const sheet = file.Sheets[sheetName];
+            const json = xlsx.utils.sheet_to_json(sheet);
+            data.push(...json); 
+        });
+  
+        const headers = Object.keys(data[0] || {}); 
+        res.json({ headers, data }); 
+    } catch (error) {
+        console.error("Error reading Excel file:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
