@@ -33,6 +33,9 @@ app.post('/api/chat', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch data from Gemini API' });
     }
 });
+app.get('/', (req, res) => {
+    res.send("hi rajesh how r u");
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
