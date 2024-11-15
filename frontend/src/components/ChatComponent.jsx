@@ -1,63 +1,47 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const ChatComponent = () => {
-  const [inputChat, setInputChat] = useState("");
-  const [messages, setMessages] = useState([]);
+const App = () => {
+  const [priceData, setPriceData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleInputChange = (e) => {
-    setInputChat(e.target.value);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const newMessage = { id: Date.now(), role: 'user', content: inputChat };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-
+  const handleFetchData = async () => {
+    setError(null);
+    setPriceData(null);
+    
     try {
-      const response = await axios.post("http://localhost:8081/api/chat", { inputChat });
-    //   console.log(response);
-      const assistantMessage = {
-        id: Date.now() + 1, 
-        role: 'assistant',
-        content: response.data.message,
-      };
-
-      setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-    //   console.log(messages);
+      // Request data from the backend, which calls the Gemini API
+      const response = await axios.post('http://localhost:8081/api/chat', { inputChat: "fetch price" });
+      
+      // Assuming backend sends the last price as part of the response
+      setPriceData(response.data.message);  // Extracts price message from response
     } catch (error) {
-      console.error("Error fetching response:", error);
+      setError("Failed to fetch price data.");
+      console.error("Error fetching data:", error);
     }
-
-    setInputChat("");
   };
 
   return (
     <div className="p-4">
-      <div className="mb-6">
-        {messages.map((message) => (
-          <div key={message.id} className="mb-4">
-            <h3 className="text-lg font-semibold mt-2">
-              {message.role === 'assistant' ? 'GPT-4' : 'User'}
-            </h3>
+      <h1 className="text-2xl font-bold mb-6">Gemini BTC/USD Price Fetcher</h1>
+      
+      <button 
+        onClick={handleFetchData} 
+        className="rounded-md bg-blue-600 p-2 text-white"
+      >
+        Fetch BTC/USD Price
+      </button>
 
-            {message.content?.split("\n").map((line, index) => (
-              <p key={`${message.id}-${index}`}>
-                {line || <>&nbsp;</>}
-              </p>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} className="mt-12">
-        <p>User Message</p>
-        <textarea  className="mt-2 w-full bg-slate-600 text-white p-2 rounded-md"  placeholder="Enter Your Prompt here...."  value={inputChat}  onChange={handleInputChange}  name="chat"  id="chat"/>
-        <button type="submit" className="rounded-md bg-blue-600 p-2 mt-2 text-white"> Send message </button>
-      </form>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
+      
+      {priceData && (
+        <div className="mt-6 p-4 bg-gray-100 rounded-md">
+          <h2 className="text-xl font-semibold text-gray-950">Current BTC/USD Price:</h2>
+          <p className="text-lg text-gray-950">{priceData}</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ChatComponent;
+export default App;
